@@ -6,11 +6,12 @@
 /*   By: nsierra- <nsierra-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/03 01:43:34 by nsierra-          #+#    #+#             */
-/*   Updated: 2021/12/03 08:14:10 by nsierra-         ###   ########.fr       */
+/*   Updated: 2021/12/03 08:20:56 by nsierra-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
+#include <stdlib.h>
 
 ssize_t	find_nl_position(char *buffer, ssize_t size)
 {
