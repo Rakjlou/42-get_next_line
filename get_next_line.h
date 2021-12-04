@@ -6,7 +6,7 @@
 /*   By: nsierra- <nsierra-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/03 01:43:34 by nsierra-          #+#    #+#             */
-/*   Updated: 2021/12/04 02:29:51 by nsierra-         ###   ########.fr       */
+/*   Updated: 2021/12/04 02:45:02 by nsierra-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 # include <unistd.h>
 # include <stdio.h>
-# define BUFFER_SIZE 7
+# define BUFFER_SIZE 4096
 # define TRIGGER_CHAR '\n'
 
 char	*get_next_line(int fd);
