@@ -6,7 +6,7 @@
 /*   By: nsierra- <nsierra-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/03 01:43:34 by nsierra-          #+#    #+#             */
-/*   Updated: 2021/12/04 02:45:02 by nsierra-         ###   ########.fr       */
+/*   Updated: 2021/12/04 03:41:30 by nsierra-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,10 @@
 # define GET_NEXT_LINE_H
 
 # include <unistd.h>
-# include <stdio.h>
-# define BUFFER_SIZE 4096
+
+# ifndef BUFFER_SIZE
+#  define BUFFER_SIZE 4096
+# endif
 # define TRIGGER_CHAR '\n'
 
 char	*get_next_line(int fd);
