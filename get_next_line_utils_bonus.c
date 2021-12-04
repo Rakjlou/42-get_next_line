@@ -6,7 +6,7 @@
 /*   By: nsierra- <nsierra-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/03 01:43:34 by nsierra-          #+#    #+#             */
-/*   Updated: 2021/12/04 03:45:09 by nsierra-         ###   ########.fr       */
+/*   Updated: 2021/12/04 04:02:43 by nsierra-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,23 +127,3 @@ t_gnl	*new_init_fd_list(int fd, t_gnl *to_init)
 	new->last = NULL;
 	return (new);
 }
-
-/*void	printf_buflist(t_gnl *gnl)
-{
-	t_gnl_node	*cursor;
-
-	cursor = gnl->first;
-	printf("BUFFER LIST FD %d\n", gnl->fd);
-	while (cursor)
-	{
-		puts("-----");
-		printf("Address %p\n", (void *)cursor);
-		printf("Size %ld\n", cursor->size);
-		printf("NL Pos %d\n", (int)cursor->nl_position);
-		printf("Buffer >%.*s<\n", (int)cursor->size, cursor->buffer);
-		puts("-----");
-		cursor = cursor->next;
-	}
-	printf("END BUFFER LIST\n");
-}
-*/
