@@ -6,7 +6,7 @@
 /*   By: nsierra- <nsierra-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/03 01:43:34 by nsierra-          #+#    #+#             */
-/*   Updated: 2021/12/03 08:15:48 by nsierra-         ###   ########.fr       */
+/*   Updated: 2021/12/04 02:29:51 by nsierra-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define GET_NEXT_LINE_H
 
 # include <unistd.h>
+# include <stdio.h>
 # define BUFFER_SIZE 7
 # define TRIGGER_CHAR '\n'
 
@@ -23,7 +24,7 @@ typedef struct s_gnl_node
 {
 	char				buffer[BUFFER_SIZE];
 	size_t				size;
-	int					nl_position;
+	ssize_t				nl_position;
 	struct s_gnl_node	*next;
 }	t_gnl_node;
 
@@ -39,5 +40,7 @@ typedef struct s_gnl
 ssize_t	find_nl_position(char *buffer, ssize_t size);
 char	*flush_buffer_list(t_gnl *gnl);
 char	*enqueue_buffer(t_gnl *gnl, char *buffer, ssize_t size, int nl_pos);
+t_gnl	*new_init_fd_list(int fd, t_gnl *to_init);
+void	printf_buflist(t_gnl *gnl);
 
 #endif

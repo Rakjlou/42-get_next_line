@@ -6,7 +6,7 @@
 /*   By: nsierra- <nsierra-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/03 01:43:34 by nsierra-          #+#    #+#             */
-/*   Updated: 2021/12/03 08:21:05 by nsierra-         ###   ########.fr       */
+/*   Updated: 2021/12/04 02:22:53 by nsierra-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,21 +14,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-
-static t_gnl	*new_fd_list(int fd)
-{
-	t_gnl	*new;
-
-	new = malloc(sizeof(t_gnl));
-	if (new == NULL)
-		return (NULL);
-	new->fd = fd;
-	new->total = 0;
-	new->first = NULL;
-	new->last = NULL;
-	new->next = NULL;
-	return (new);
-}
 
 static t_gnl	*get_fd_list(int fd, t_gnl **buffers_list)
 {
@@ -45,7 +30,7 @@ static t_gnl	*get_fd_list(int fd, t_gnl **buffers_list)
 		prev = cursor;
 		cursor = cursor->next;
 	}
-	new = new_fd_list(fd);
+	new = new_init_fd_list(fd, NULL);
 	if (new == NULL)
 		return (NULL);
 	else if (prev == NULL)
@@ -68,9 +53,11 @@ char	*get_next_line(int fd)
 		return (NULL);
 	while (42)
 	{
+		if (gnl->last != NULL && gnl->last->nl_position >= 0)
+			return (flush_buffer_list(gnl));
 		bytes_read = read(fd, buffer, BUFFER_SIZE);
 		if (bytes_read <= 0)
-			return (NULL);
+			return (flush_buffer_list(gnl));
 		next_line = enqueue_buffer(gnl, buffer, bytes_read,
 				find_nl_position(buffer, bytes_read));
 		if (next_line != NULL)
@@ -78,20 +65,3 @@ char	*get_next_line(int fd)
 	}
 	return (NULL);
 }
-
-//static void	printf_buflist(t_gnl *gnl)
-//{
-//	t_gnl_node	*cursor;
-//
-//	cursor = gnl->first;
-//	printf("BUFFER LIST FD %d\n", gnl->fd);
-//	while (cursor)
-//	{
-//		puts("-----");
-//		printf("Size %ld\n", cursor->size);
-//		printf("Buffer >%.*s<\n", (int)cursor->size, cursor->buffer);
-//		puts("-----");
-//		cursor = cursor->next;
-//	}
-//	printf("END BUFFER LIST\n");
-//}
