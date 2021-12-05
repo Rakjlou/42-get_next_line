@@ -6,7 +6,7 @@
 /*   By: nsierra- <nsierra-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/03 01:43:34 by nsierra-          #+#    #+#             */
-/*   Updated: 2021/12/05 01:47:12 by nsierra-         ###   ########.fr       */
+/*   Updated: 2021/12/05 03:48:17 by nsierra-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ typedef struct s_gnl
 
 ssize_t	find_nl_position(char *buffer, ssize_t size);
 char	*flush_buffer_list(t_gnl *gnl);
-char	*enqueue_buffer(t_gnl *gnl, char *buffer, ssize_t size);
+char	*enqueue_buffer(t_gnl *gnl, char *buffer, ssize_t size, int no_flush);
 t_gnl	*new_init_fd_list(int fd, t_gnl *to_init);
 void	printf_buflist(t_gnl *gnl);
 

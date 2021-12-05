@@ -6,11 +6,12 @@
 /*   By: nsierra- <nsierra-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/03 01:43:34 by nsierra-          #+#    #+#             */
-/*   Updated: 2021/12/05 01:49:35 by nsierra-         ###   ########.fr       */
+/*   Updated: 2021/12/05 03:51:45 by nsierra-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
 
@@ -50,9 +51,11 @@ char	*fill_and_destroy(t_gnl *gnl, char *next_line, size_t next_line_size)
 	next_line[i] = '\0';
 	gnl = new_init_fd_list(gnl->fd, gnl);
 	if (prev->nl_position == -1 || (size_t)prev->nl_position == prev->size - 1)
+	{
 		return ((free(prev), next_line));
+	}
 	enqueue_buffer(gnl, prev->buffer + prev->nl_position + 1,
-		prev->size - (prev->nl_position + 1));
+		prev->size - (prev->nl_position + 1), 1);
 	free(prev);
 	return (next_line);
 }
@@ -65,14 +68,18 @@ char	*flush_buffer_list(t_gnl *gnl)
 
 	last = gnl->last;
 	if (last == NULL)
+	{
 		return (NULL);
+	}
 	else if (last->nl_position >= 0)
 		next_line_size = gnl->total - (last->size - last->nl_position) + 1;
 	else
 		next_line_size = gnl->total;
 	next_line = malloc(sizeof(char) * (next_line_size + 1));
 	if (next_line == NULL)
+	{
 		return (NULL);
+	}
 	next_line = fill_and_destroy(gnl, next_line, next_line_size);
 	last = gnl->last;
 	if (last != NULL)
@@ -80,34 +87,32 @@ char	*flush_buffer_list(t_gnl *gnl)
 	return (next_line);
 }
 
-char	*enqueue_buffer(t_gnl *gnl, char *buffer, ssize_t size)
+char	*enqueue_buffer(t_gnl *gnl, char *buffer, ssize_t size, int no_flush)
 {
 	t_gnl_node	*node;
 	ssize_t		i;
-	ssize_t		nl_pos;
 
 	i = 0;
-	nl_pos = -1;
 	node = malloc(sizeof(t_gnl_node));
+	node->nl_position = -1;
 	if (node == NULL)
 		return (NULL);
 	while (i < size)
 	{
 		node->buffer[i] = buffer[i];
-		if (buffer[i] == TRIGGER_CHAR)
-			nl_pos = i;
+		if (buffer[i] == TRIGGER_CHAR && node->nl_position == -1)
+			node->nl_position = i;
 		i++;
 	}
 	node->size = (size_t)size;
 	node->next = NULL;
-	node->nl_position = nl_pos;
 	if (gnl->first == NULL)
 		gnl->first = node;
 	else
 		gnl->last->next = node;
 	gnl->last = node;
 	gnl->total += node->size;
-	if (nl_pos >= 0)
+	if (node->nl_position >= 0 && no_flush == 0)
 		return (flush_buffer_list(gnl));
 	return (NULL);
 }
