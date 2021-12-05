@@ -6,7 +6,7 @@
 /*   By: nsierra- <nsierra-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/03 01:43:34 by nsierra-          #+#    #+#             */
-/*   Updated: 2021/12/04 03:38:58 by nsierra-         ###   ########.fr       */
+/*   Updated: 2021/12/05 01:47:25 by nsierra-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,8 +85,7 @@ char	*main_loop(t_gnl **fd_list, t_gnl *gnl)
 			remove_fd_list(fd_list, gnl);
 			return (next_line);
 		}
-		next_line = enqueue_buffer(gnl, buffer, bytes_read,
-				find_nl_position(buffer, bytes_read));
+		next_line = enqueue_buffer(gnl, buffer, bytes_read);
 		if (next_line != NULL)
 			return (next_line);
 	}

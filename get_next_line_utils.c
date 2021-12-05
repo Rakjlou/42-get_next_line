@@ -6,7 +6,7 @@
 /*   By: nsierra- <nsierra-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/03 01:43:34 by nsierra-          #+#    #+#             */
-/*   Updated: 2021/12/04 04:02:32 by nsierra-         ###   ########.fr       */
+/*   Updated: 2021/12/05 01:49:35 by nsierra-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ char	*fill_and_destroy(t_gnl *gnl, char *next_line, size_t next_line_size)
 	if (prev->nl_position == -1 || (size_t)prev->nl_position == prev->size - 1)
 		return ((free(prev), next_line));
 	enqueue_buffer(gnl, prev->buffer + prev->nl_position + 1,
-		prev->size - (prev->nl_position + 1), -1);
+		prev->size - (prev->nl_position + 1));
 	free(prev);
 	return (next_line);
 }
@@ -80,18 +80,22 @@ char	*flush_buffer_list(t_gnl *gnl)
 	return (next_line);
 }
 
-char	*enqueue_buffer(t_gnl *gnl, char *buffer, ssize_t size, int nl_pos)
+char	*enqueue_buffer(t_gnl *gnl, char *buffer, ssize_t size)
 {
 	t_gnl_node	*node;
 	ssize_t		i;
+	ssize_t		nl_pos;
 
 	i = 0;
+	nl_pos = -1;
 	node = malloc(sizeof(t_gnl_node));
 	if (node == NULL)
 		return (NULL);
 	while (i < size)
 	{
 		node->buffer[i] = buffer[i];
+		if (buffer[i] == TRIGGER_CHAR)
+			nl_pos = i;
 		i++;
 	}
 	node->size = (size_t)size;
