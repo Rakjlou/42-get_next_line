@@ -6,99 +6,121 @@
 /*   By: nsierra- <nsierra-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/03 01:43:34 by nsierra-          #+#    #+#             */
-/*   Updated: 2021/12/05 03:49:17 by nsierra-         ###   ########.fr       */
+/*   Updated: 2021/12/09 19:21:00 by nsierra-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
+#include <limits.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <unistd.h>
+#include <stdio.h>
 
-static t_gnl	*get_fd_list(int fd, t_gnl **buffers_list)
+static t_buffer	*get_buffer_node(int fd)
 {
-	t_gnl	*cursor;
-	t_gnl	*prev;
-	t_gnl	*new;
+	t_buffer	*buffer_node;
+	char		*buffer;
+	ssize_t		read_bytes;
 
-	if (fd < 0)
+	buffer_node = malloc(sizeof(t_buffer));
+	if (buffer_node == NULL)
 		return (NULL);
-	prev = NULL;
-	cursor = *buffers_list;
-	while (cursor)
+	buffer = malloc(sizeof(char) * BUFFER_SIZE);
+	if (buffer == NULL)
+		return (free(buffer_node), NULL);
+	read_bytes = read(fd, buffer, BUFFER_SIZE);
+	if (read_bytes < 0)
+		return (free(buffer_node), free(buffer), NULL);
+	else if (read_bytes == 0)
 	{
-		if (cursor->fd == fd)
-			return (cursor);
-		prev = cursor;
-		cursor = cursor->next;
+		buffer_node->eof = 1;
+		buffer[0] = '\0';
 	}
-	new = new_init_fd_list(fd, NULL);
-	if (new == NULL)
-		return (NULL);
-	else if (prev == NULL)
-		*buffers_list = new;
 	else
-		prev->next = new;
-	return (new);
+		buffer_node->eof = 0;
+	buffer_node->size = (unsigned long)read_bytes;
+	buffer_node->start = 0;
+	buffer_node->buffer = buffer;
+	buffer_node->next = NULL;
+	return (buffer_node);
 }
 
-static void	remove_fd_list(t_gnl **fd_list, t_gnl *to_remove)
+static unsigned long	get_nl_index(int fd, t_buffer *list)
 {
-	t_gnl	*prev;
-	t_gnl	*cursor;
+	unsigned long	i;
+	unsigned long	nl_index;
 
-	cursor = *fd_list;
-	prev = NULL;
-	if (cursor->fd == to_remove->fd)
-	{
-		*fd_list = cursor->next;
-		free(cursor);
-		return ;
-	}
-	while (cursor)
-	{
-		if (cursor->fd == to_remove->fd)
-		{
-			prev->next = cursor->next;
-			free(cursor);
-			return ;
-		}
-		prev = cursor;
-		cursor = cursor->next;
-	}
-}
-
-char	*main_loop(t_gnl **fd_list, t_gnl *gnl)
-{
-	char			buffer[BUFFER_SIZE];
-	ssize_t			bytes_read;
-	char			*next_line;
-
+	nl_index = 0;
+	i = list->start;
+	if (list->eof == 1)
+		return (ULONG_MAX);
 	while (42)
 	{
-		if (gnl->last != NULL && gnl->last->nl_position >= 0)
-			return (flush_buffer_list(gnl));
-		bytes_read = read(gnl->fd, buffer, BUFFER_SIZE);
-		if (bytes_read <= 0)
+		if ((i < list->size && list->buffer[i] == TRIGGER_C) || list->eof == 1)
+			return (nl_index + 1);
+		else if (i + 1 >= list->size)
 		{
-			next_line = flush_buffer_list(gnl);
-			remove_fd_list(fd_list, gnl);
-			return (next_line);
+			list->next = get_buffer_node(fd);
+			if (list->next == NULL)
+				return (ULONG_MAX);
+			i = 0;
+			list = list->next;
 		}
-		next_line = enqueue_buffer(gnl, buffer, bytes_read, 0);
-		if (next_line != NULL)
-			return (next_line);
+		else
+			++i;
+		++nl_index;
 	}
-	return (NULL);
+	return (ULONG_MAX);
+}
+
+static void	update_buffer_list(t_buffer *end, t_buffer **list, unsigned int i)
+{
+	if (end == NULL)
+		*list = NULL;
+	else if (i >= end->size)
+		*list = next_node(end, NULL);
+	else
+	{
+		end->start = i;
+		*list = end;
+	}
+}
+
+static char	*flush_buffer_list(unsigned long nl_index, t_buffer **list)
+{
+	t_buffer		*cursor;
+	char			*new_line;
+	char			*new_line_cursor;
+	unsigned int	i;
+
+	if (nl_index == ULONG_MAX)
+		return (free_all(list));
+	new_line = malloc(sizeof(char) * (nl_index + 1));
+	if (new_line == NULL)
+		return (free_all(list));
+	new_line_cursor = new_line;
+	cursor = *list;
+	i = cursor->start;
+	while (nl_index--)
+	{
+		*new_line_cursor++ = cursor->buffer[i++];
+		if (i >= cursor->size)
+			cursor = next_node(cursor, &i);
+	}
+	*new_line_cursor = '\0';
+	update_buffer_list(cursor, list, i);
+	return (new_line);
 }
 
 char	*get_next_line(int fd)
 {
-	static t_gnl	*fd_list = NULL;
-	t_gnl			*gnl;
+	static t_buffer	*list = NULL;
 
-	gnl = get_fd_list(fd, &fd_list);
-	if (gnl == NULL)
-		return (NULL);
-	return (main_loop(&fd_list, gnl));
+	if (list == NULL)
+	{
+		list = get_buffer_node(fd);
+		if (list == NULL)
+			return (NULL);
+	}
+	return (flush_buffer_list(get_nl_index(fd, list), &list));
 }
