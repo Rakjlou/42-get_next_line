@@ -6,7 +6,7 @@
 /*   By: nsierra- <nsierra-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/03 01:43:34 by nsierra-          #+#    #+#             */
-/*   Updated: 2021/12/09 17:09:09 by nsierra-         ###   ########.fr       */
+/*   Updated: 2021/12/10 05:02:31 by nsierra-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,8 @@
 
 typedef struct s_buffer
 {
-	unsigned long	size;
-	unsigned long	start;
+	unsigned int	size;
+	unsigned int	start;
 	int				eof;
 	char			*buffer;
 	struct s_buffer	*next;
@@ -32,7 +32,7 @@ typedef struct s_buffer
 char		*get_next_line(int fd);
 void		free_node(t_buffer *node);
 char		*free_all(t_buffer **list);
-t_buffer	*next_node(t_buffer *list, unsigned int *i);
+t_buffer	*next_node(t_buffer *list);
 char		*get_next_line(int fd);
 
 #endif

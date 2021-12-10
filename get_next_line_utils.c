@@ -6,7 +6,7 @@
 /*   By: nsierra- <nsierra-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/09 15:27:06 by nsierra-          #+#    #+#             */
-/*   Updated: 2021/12/09 17:09:20 by nsierra-         ###   ########.fr       */
+/*   Updated: 2021/12/10 05:02:24 by nsierra-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,12 +36,10 @@ char	*free_all(t_buffer **list)
 	return (NULL);
 }
 
-t_buffer	*next_node(t_buffer *list, unsigned int *i)
+t_buffer	*next_node(t_buffer *list)
 {
 	t_buffer	*prev;
 
-	if (i != NULL)
-		*i = 0;
 	prev = list;
 	list = list->next;
 	free_node(prev);

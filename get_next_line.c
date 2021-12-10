@@ -6,7 +6,7 @@
 /*   By: nsierra- <nsierra-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/03 01:43:34 by nsierra-          #+#    #+#             */
-/*   Updated: 2021/12/09 19:21:00 by nsierra-         ###   ########.fr       */
+/*   Updated: 2021/12/10 05:04:29 by nsierra-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <stdio.h>
 
 static t_buffer	*get_buffer_node(int fd)
 {
@@ -38,22 +37,22 @@ static t_buffer	*get_buffer_node(int fd)
 	}
 	else
 		buffer_node->eof = 0;
-	buffer_node->size = (unsigned long)read_bytes;
+	buffer_node->size = (unsigned int)read_bytes;
 	buffer_node->start = 0;
 	buffer_node->buffer = buffer;
 	buffer_node->next = NULL;
 	return (buffer_node);
 }
 
-static unsigned long	get_nl_index(int fd, t_buffer *list)
+static unsigned int	get_nl_index(int fd, register t_buffer *list)
 {
-	unsigned long	i;
-	unsigned long	nl_index;
+	register unsigned int	i;
+	register unsigned int	nl_index;
 
 	nl_index = 0;
 	i = list->start;
 	if (list->eof == 1)
-		return (ULONG_MAX);
+		return (UINT_MAX);
 	while (42)
 	{
 		if ((i < list->size && list->buffer[i] == TRIGGER_C) || list->eof == 1)
@@ -62,7 +61,7 @@ static unsigned long	get_nl_index(int fd, t_buffer *list)
 		{
 			list->next = get_buffer_node(fd);
 			if (list->next == NULL)
-				return (ULONG_MAX);
+				return (UINT_MAX);
 			i = 0;
 			list = list->next;
 		}
@@ -70,7 +69,7 @@ static unsigned long	get_nl_index(int fd, t_buffer *list)
 			++i;
 		++nl_index;
 	}
-	return (ULONG_MAX);
+	return (UINT_MAX);
 }
 
 static void	update_buffer_list(t_buffer *end, t_buffer **list, unsigned int i)
@@ -78,7 +77,7 @@ static void	update_buffer_list(t_buffer *end, t_buffer **list, unsigned int i)
 	if (end == NULL)
 		*list = NULL;
 	else if (i >= end->size)
-		*list = next_node(end, NULL);
+		*list = next_node(end);
 	else
 	{
 		end->start = i;
@@ -86,14 +85,15 @@ static void	update_buffer_list(t_buffer *end, t_buffer **list, unsigned int i)
 	}
 }
 
-static char	*flush_buffer_list(unsigned long nl_index, t_buffer **list)
+static char	*flush_buffer_list(register unsigned int nl_index,
+	register t_buffer **list)
 {
-	t_buffer		*cursor;
-	char			*new_line;
-	char			*new_line_cursor;
-	unsigned int	i;
+	t_buffer				*cursor;
+	char					*new_line;
+	char					*new_line_cursor;
+	register unsigned int	i;
 
-	if (nl_index == ULONG_MAX)
+	if (nl_index == UINT_MAX)
 		return (free_all(list));
 	new_line = malloc(sizeof(char) * (nl_index + 1));
 	if (new_line == NULL)
@@ -105,7 +105,10 @@ static char	*flush_buffer_list(unsigned long nl_index, t_buffer **list)
 	{
 		*new_line_cursor++ = cursor->buffer[i++];
 		if (i >= cursor->size)
-			cursor = next_node(cursor, &i);
+		{
+			cursor = next_node(cursor);
+			i = 0;
+		}
 	}
 	*new_line_cursor = '\0';
 	update_buffer_list(cursor, list, i);
