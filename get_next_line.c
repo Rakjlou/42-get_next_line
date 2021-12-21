@@ -11,119 +11,99 @@
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-#include <limits.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-static t_buffer	*get_buffer_node(int fd)
+static t_node	*get_buffer(int fd)
 {
-	t_buffer	*buffer_node;
-	char		*buffer;
-	ssize_t		read_bytes;
+	t_node  *new;
+	ssize_t read_len;
 
-	buffer_node = malloc(sizeof(t_buffer));
-	if (buffer_node == NULL)
+	new = malloc(sizeof(t_node));
+	if (new == NULL)
 		return (NULL);
-	buffer = malloc(sizeof(char) * BUFFER_SIZE);
-	if (buffer == NULL)
-		return (free(buffer_node), NULL);
-	read_bytes = read(fd, buffer, BUFFER_SIZE);
-	if (read_bytes < 0)
-		return (free(buffer_node), free(buffer), NULL);
-	else if (read_bytes == 0)
-	{
-		buffer_node->eof = 1;
-		buffer[0] = '\0';
-	}
-	else
-		buffer_node->eof = 0;
-	buffer_node->size = (unsigned int)read_bytes;
-	buffer_node->start = 0;
-	buffer_node->buffer = buffer;
-	buffer_node->next = NULL;
-	return (buffer_node);
+	new->buffer = malloc(sizeof(char) * BUFFER_SIZE);
+	if (new->buffer == NULL)
+		return (free(new), NULL);
+	read_len = read(fd, new->buffer, BUFFER_SIZE);
+	if (read_len <= 0)
+		return (free(new->buffer), free(new), NULL);
+	new->len = (size_t)read_len;
+	new->start = 0;
+	new->end = 0;
+	new->next = NULL;
+	return (new);
 }
 
-static unsigned int	get_nl_index(int fd, register t_buffer *list)
+static void	free_list(t_node **list, t_node *stop)
 {
-	register unsigned int	i;
-	register unsigned int	nl_index;
+	t_node	*prev;
+	t_node	*cursor;
 
-	nl_index = 0;
-	i = list->start;
-	if (list->eof == 1)
-		return (UINT_MAX);
-	while (42)
-	{
-		if ((i < list->size && list->buffer[i] == TRIGGER_C) || list->eof == 1)
-			return (nl_index + 1);
-		else if (i + 1 >= list->size)
-		{
-			list->next = get_buffer_node(fd);
-			if (list->next == NULL)
-				return (UINT_MAX);
-			i = 0;
-			list = list->next;
-		}
-		else
-			++i;
-		++nl_index;
-	}
-	return (UINT_MAX);
-}
-
-static void	update_buffer_list(t_buffer *end, t_buffer **list, unsigned int i)
-{
-	if (end == NULL)
-		*list = NULL;
-	else if (i >= end->size)
-		*list = next_node(end);
-	else
-	{
-		end->start = i;
-		*list = end;
-	}
-}
-
-static char	*flush_buffer_list(register unsigned int nl_index,
-	register t_buffer **list)
-{
-	t_buffer				*cursor;
-	char					*new_line;
-	register char			*new_line_cursor;
-	register unsigned int	i;
-
-	if (nl_index == UINT_MAX)
-		return (free_all(list));
-	new_line = malloc(sizeof(char) * (nl_index + 1));
-	if (new_line == NULL)
-		return (free_all(list));
-	new_line_cursor = new_line;
 	cursor = *list;
-	i = cursor->start;
-	while (nl_index--)
+	while (cursor != stop)
 	{
-		*new_line_cursor++ = cursor->buffer[i++];
-		if (i >= cursor->size)
-		{
-			cursor = next_node(cursor);
-			i = 0;
-		}
+		prev = cursor;
+		cursor = cursor->next;
+		free(prev->buffer);
+		free(prev);
 	}
-	*new_line_cursor = '\0';
-	update_buffer_list(cursor, list, i);
-	return (new_line);
+	*list = stop;
+}
+
+static char	*flush_list(t_node **list, size_t total)
+{
+	t_node	*node;
+	char	*newline;
+	size_t	i;
+
+	i = 0;
+	node = *list;
+	newline = malloc(sizeof(char) * (total + 1));
+	if (newline == NULL)
+		return (free_list(list, NULL), NULL);
+	while (i < total)
+	{
+		while (i < total && node->start < node->end)
+			newline[i++] = node->buffer[node->start++];
+		if (node->start >= node->len)
+			node = node->next;
+	}
+	newline[i] = '\0';
+	return (free_list(list, node), newline);
+}
+
+static char	*find_newline(t_node **list, int fd)
+{
+	t_node	*node;
+	size_t	total;
+
+	node = *list;
+	total = 0;
+	while (node)
+	{
+		while (node->end < node->len)
+		{
+			if (node->buffer[node->end] == '\n')
+				return (node->end++, flush_list(list, total + 1));
+			node->end++;
+			total++;
+		}
+		node->next = get_buffer(fd);
+		node = node->next;
+	}
+	return (flush_list(list, total));
 }
 
 char	*get_next_line(int fd)
 {
-	static t_buffer	*list = NULL;
+	static t_node	*list = NULL;
 
 	if (list == NULL)
 	{
-		list = get_buffer_node(fd);
+		list = get_buffer(fd);
 		if (list == NULL)
 			return (NULL);
 	}
-	return (flush_buffer_list(get_nl_index(fd, list), &list));
+	return find_newline(&list, fd);
 }

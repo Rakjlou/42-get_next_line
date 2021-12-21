@@ -15,24 +15,15 @@
 
 # include <unistd.h>
 
-# ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 4096
-# endif
-# define TRIGGER_C '\n'
-
-typedef struct s_buffer
+typedef struct s_gnl_node
 {
-	unsigned int	size;
-	unsigned int	start;
-	int				eof;
 	char			*buffer;
-	struct s_buffer	*next;
-}	t_buffer;
+	size_t			start;
+	size_t			end;
+	size_t			len;
+	struct s_gnl_node	*next;
+}	t_gnl_node;
 
-char		*get_next_line(int fd);
-void		free_node(t_buffer *node);
-char		*free_all(t_buffer **list);
-t_buffer	*next_node(t_buffer *list);
 char		*get_next_line(int fd);
 
 #endif
