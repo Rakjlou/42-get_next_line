@@ -14,12 +14,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static t_node	*get_buffer(int fd)
+static t_gnl_node	*get_buffer(int fd)
 {
-	t_node  *new;
+	t_gnl_node  *new;
 	ssize_t read_len;
 
-	new = malloc(sizeof(t_node));
+	new = malloc(sizeof(t_gnl_node));
 	if (new == NULL)
 		return (NULL);
 	new->buffer = malloc(sizeof(char) * BUFFER_SIZE);
@@ -35,10 +35,10 @@ static t_node	*get_buffer(int fd)
 	return (new);
 }
 
-static void	free_list(t_node **list, t_node *stop)
+static void	free_list(t_gnl_node **list, t_gnl_node *stop)
 {
-	t_node	*prev;
-	t_node	*cursor;
+	t_gnl_node	*prev;
+	t_gnl_node	*cursor;
 
 	cursor = *list;
 	while (cursor != stop)
@@ -51,9 +51,9 @@ static void	free_list(t_node **list, t_node *stop)
 	*list = stop;
 }
 
-static char	*flush_list(t_node **list, size_t total)
+static char	*flush_list(t_gnl_node **list, size_t total)
 {
-	t_node	*node;
+	t_gnl_node	*node;
 	char	*newline;
 	size_t	i;
 
@@ -73,9 +73,9 @@ static char	*flush_list(t_node **list, size_t total)
 	return (free_list(list, node), newline);
 }
 
-static char	*find_newline(t_node **list, int fd)
+static char	*find_newline(t_gnl_node **list, int fd)
 {
-	t_node	*node;
+	t_gnl_node	*node;
 	size_t	total;
 
 	node = *list;
@@ -97,7 +97,7 @@ static char	*find_newline(t_node **list, int fd)
 
 char	*get_next_line(int fd)
 {
-	static t_node	*list = NULL;
+	static t_gnl_node	*list = NULL;
 
 	if (list == NULL)
 	{
